@@ -3,46 +3,47 @@ package twobuyer
 import (
 	"context"
 	"fmt"
-	"go.opentelemetry.io/otel"
+	"github.com/fangyi-zhou/mpst-examples/common"
 	"go.opentelemetry.io/otel/trace"
 	"math/rand"
 	"sync"
 )
 
-func (a *A) run(wg *sync.WaitGroup) {
+func runA(self *common.EndPoint, wg *sync.WaitGroup) {
 	defer wg.Done()
 	ctx := context.Background()
 	var span trace.Span
-	ctx, span = a.tracer.Start(ctx, "TwoBuyer Endpoint A")
+	ctx, span = self.Tracer.Start(ctx, "TwoBuyer Endpoint A")
 	defer span.End()
 	// Send query to S
 	var query = rand.Intn(100)
 	fmt.Println("A: Sending query", query)
-	a.SendS(ctx, "query", query)
+	self.Send(ctx, "S", common.Message{Label: "query", Value: query})
 	// Receive a quote
-	var quote = a.RecvS(ctx, "quote")
-	var otherShare = a.RecvB(ctx, "share")
+	var quote = self.Recv(ctx, "S").Value.(int)
+	var otherShare = self.Recv(ctx, "B").Value.(int)
 	if otherShare*2 >= quote {
 		// 1 stands for ok
-		a.SendS(ctx, "buy", 1)
+		self.Send(ctx, "S", common.Message{Label: "buy", Value: 1})
 	} else {
-		a.SendS(ctx, "buy", 0)
+		self.Send(ctx, "S", common.Message{Label: "buy", Value: 1})
 	}
 }
-func (s *S) run(wg *sync.WaitGroup) {
+
+func runS(self *common.EndPoint, wg *sync.WaitGroup) {
 	defer wg.Done()
 	ctx := context.Background()
 	var span trace.Span
-	ctx, span = s.tracer.Start(ctx, "TwoBuyer Endpoint S")
+	ctx, span = self.Tracer.Start(ctx, "TwoBuyer Endpoint S")
 	defer span.End()
 	// Receive a query
-	var query = s.RecvA(ctx, "query")
+	var query = self.Recv(ctx, "A").Value.(int)
 	// Send a quote
 	var quote = query * 2
 	fmt.Println("S: Sending quote", quote)
-	s.SendA(ctx, "quote", quote)
-	s.SendB(ctx, "quote", quote)
-	var decision = s.RecvA(ctx, "buy")
+	self.Send(ctx, "A", common.Message{Label: "quote", Value: quote})
+	self.Send(ctx, "B", common.Message{Label: "quote", Value: quote})
+	var decision = self.Recv(ctx, "A").Value.(int)
 	if decision == 1 {
 		fmt.Println("Succeed!")
 	} else {
@@ -50,60 +51,27 @@ func (s *S) run(wg *sync.WaitGroup) {
 	}
 }
 
-func (b *B) run(wg *sync.WaitGroup) {
+func runB(self *common.EndPoint, wg *sync.WaitGroup) {
 	defer wg.Done()
 	ctx := context.Background()
 	var span trace.Span
-	ctx, span = b.tracer.Start(ctx, "TwoBuyer Endpoint B")
+	ctx, span = self.Tracer.Start(ctx, "TwoBuyer Endpoint B")
 	defer span.End()
 	// Receive a quote
-	var quote = b.RecvS(ctx, "quote")
+	var quote = self.Recv(ctx, "S").Value.(int)
 	// Propose a share
 	var share = quote/2 + rand.Intn(10) - 5
 	fmt.Println("B: Proposing share", share)
-	b.SendA(ctx, "share", share)
+	self.Send(ctx, "A", common.Message{Label: "share", Value: share})
 }
 
-func spawn() (*A, *B, *S) {
-	var a = A{
-		make(chan int, 1),
-		make(chan int, 1),
-		nil,
-		nil,
-		otel.Tracer("TwoBuyer/A"),
-	}
-	var s = S{
-		make(chan int, 1),
-		make(chan int, 1),
-		nil,
-		nil,
-		otel.Tracer("TwoBuyer/S"),
-	}
-	var b = B{
-		make(chan int, 1),
-		make(chan int, 1),
-		nil,
-		nil,
-		otel.Tracer("TwoBuyer/B"),
-	}
-	s.a = &a
-	b.a = &a
-	a.s = &s
-	b.s = &s
-	a.b = &b
-	s.b = &b
-	return &a, &b, &s
+func MakeEndpoints() []*common.EndPoint {
+	a := common.MakeEndPoint("A", runA)
+	b := common.MakeEndPoint("B", runB)
+	s := common.MakeEndPoint("S", runS)
+	return []*common.EndPoint{a, b, s}
 }
 
 func RunAll() {
-	shutdown := InitOtlpTracer()
-	defer shutdown()
-
-	var wg sync.WaitGroup
-	var a, b, s = spawn()
-	wg.Add(3)
-	go a.run(&wg)
-	go b.run(&wg)
-	go s.run(&wg)
-	wg.Wait()
+	common.RunEndpoints(InitOtlpTracer, MakeEndpoints())
 }

@@ -1,12 +1,12 @@
 package common
 
 import (
+	"context"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"log"
 	"sync"
 )
-
-type RunFunc = func(group *sync.WaitGroup)
 
 type Message struct {
 	Label string
@@ -15,10 +15,20 @@ type Message struct {
 
 type EndPoint struct {
 	Name     string
-	Run      RunFunc
+	run      func(self *EndPoint, group *sync.WaitGroup)
 	partners map[string]*EndPoint
 	buffer   map[string]chan Message
-	tracer   trace.Tracer
+	Tracer   trace.Tracer
+}
+
+func MakeEndPoint(name string, runFunc func(self *EndPoint, group *sync.WaitGroup)) *EndPoint {
+	return &EndPoint{
+		Name:     name,
+		run:      runFunc,
+		partners: make(map[string]*EndPoint),
+		buffer:   make(map[string]chan Message),
+		Tracer:   otel.Tracer(name),
+	}
 }
 
 func connectEndpoints(ep1 *EndPoint, ep2 *EndPoint) {
@@ -37,14 +47,14 @@ func connectEndpoints(ep1 *EndPoint, ep2 *EndPoint) {
 	ep2.buffer[ep1.Name] = make(chan Message, 1)
 }
 
-func (e *EndPoint) Send(partner string, message Message) {
+func (e *EndPoint) Send(ctx context.Context, partner string, message Message) {
 	if _, exists := e.partners[partner]; !exists {
 		log.Panicf("%s is trying to send a message to an unconnected endpoint %s", e.Name, partner)
 	}
 	e.partners[partner].buffer[e.Name] <- message
 }
 
-func (e *EndPoint) Recv(partner string) Message {
+func (e *EndPoint) Recv(ctx context.Context, partner string) Message {
 	if _, exists := e.partners[partner]; !exists {
 		log.Panicf("%s is trying to send a message to an unconnected endpoint %s", e.Name, partner)
 	}
