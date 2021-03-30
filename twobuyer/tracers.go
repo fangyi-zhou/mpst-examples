@@ -66,7 +66,7 @@ func InitOtlpTracer() func() {
 	// probably connect directly to the service through dns
 	driver := otlpgrpc.NewDriver(
 		otlpgrpc.WithInsecure(),
-		otlpgrpc.WithEndpoint("localhost:30080"),
+		otlpgrpc.WithEndpoint("localhost:55680"),
 		otlpgrpc.WithDialOption(grpc.WithBlock()), // useful for testing
 	)
 	exp, err := otlp.NewExporter(ctx, driver)
