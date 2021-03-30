@@ -3,9 +3,18 @@ package common
 import (
 	"context"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"log"
 	"sync"
+)
+
+var (
+	actionKey   = attribute.Key("mpst/action")
+	msgLabelKey = attribute.Key("mpst/msgLabel")
+	partnerKey  = attribute.Key("mpst/partner")
+	actionSend  = "Send"
+	actionRecv  = "Recv"
 )
 
 type Message struct {
@@ -48,6 +57,10 @@ func connectEndpoints(ep1 *EndPoint, ep2 *EndPoint) {
 }
 
 func (e *EndPoint) Send(ctx context.Context, partner string, message Message) {
+	var span trace.Span
+	_, span = e.Tracer.Start(ctx, "Send")
+	defer span.End()
+	span.SetAttributes(msgLabelKey.String(message.Label), partnerKey.String(partner), actionKey.String(actionSend))
 	if _, exists := e.partners[partner]; !exists {
 		log.Panicf("%s is trying to send a message to an unconnected endpoint %s", e.Name, partner)
 	}
@@ -55,8 +68,13 @@ func (e *EndPoint) Send(ctx context.Context, partner string, message Message) {
 }
 
 func (e *EndPoint) Recv(ctx context.Context, partner string) Message {
+	var span trace.Span
+	_, span = e.Tracer.Start(ctx, "Recv")
+	defer span.End()
 	if _, exists := e.partners[partner]; !exists {
 		log.Panicf("%s is trying to send a message to an unconnected endpoint %s", e.Name, partner)
 	}
-	return <-e.buffer[partner]
+	message := <-e.buffer[partner]
+	span.SetAttributes(msgLabelKey.String(message.Label), partnerKey.String(partner), actionKey.String(actionRecv))
+	return message
 }
