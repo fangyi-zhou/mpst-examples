@@ -1,7 +1,10 @@
 package twobuyer
 
-import "testing"
+import (
+	"github.com/fangyi-zhou/mpst-examples/common"
+	"testing"
+)
 
 func TestItRuns(t *testing.T) {
-	RunAll()
+	common.RunEndpoints(common.InitStdoutTracer, MakeEndpoints())
 }

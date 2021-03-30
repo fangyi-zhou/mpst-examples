@@ -1,4 +1,4 @@
-package twobuyer
+package common
 
 import (
 	"context"

@@ -73,5 +73,5 @@ func MakeEndpoints() []*common.EndPoint {
 }
 
 func RunAll() {
-	common.RunEndpoints(InitOtlpTracer, MakeEndpoints())
+	common.RunEndpoints(common.InitOtlpTracer, MakeEndpoints())
 }
