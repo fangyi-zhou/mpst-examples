@@ -2,14 +2,14 @@ package twobuyer
 
 import (
 	"context"
-	"go.opentelemetry.io/otel/api/trace"
-	"go.opentelemetry.io/otel/label"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
-	actionKey   = label.Key("mpst/action")
-	msgLabelKey = label.Key("mpst/msgLabel")
-	partnerKey  = label.Key("mpst/partner")
+	actionKey   = attribute.Key("mpst/action")
+	msgLabelKey = attribute.Key("mpst/msgLabel")
+	partnerKey  = attribute.Key("mpst/partner")
 )
 
 type A struct {

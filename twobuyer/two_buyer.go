@@ -3,8 +3,8 @@ package twobuyer
 import (
 	"context"
 	"fmt"
-	"go.opentelemetry.io/otel/api/global"
-	"go.opentelemetry.io/otel/api/trace"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"math/rand"
 	"sync"
 )
@@ -70,21 +70,21 @@ func spawn() (*A, *B, *S) {
 		make(chan int, 1),
 		nil,
 		nil,
-		global.Tracer("TwoBuyer/A"),
+		otel.Tracer("TwoBuyer/A"),
 	}
 	var s = S{
 		make(chan int, 1),
 		make(chan int, 1),
 		nil,
 		nil,
-		global.Tracer("TwoBuyer/S"),
+		otel.Tracer("TwoBuyer/S"),
 	}
 	var b = B{
 		make(chan int, 1),
 		make(chan int, 1),
 		nil,
 		nil,
-		global.Tracer("TwoBuyer/B"),
+		otel.Tracer("TwoBuyer/B"),
 	}
 	s.a = &a
 	b.a = &a
