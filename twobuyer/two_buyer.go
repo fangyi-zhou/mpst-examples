@@ -26,7 +26,28 @@ func runA(self *common.EndPoint, wg *sync.WaitGroup) {
 		// 1 stands for ok
 		self.Send(ctx, "S", common.Message{Label: "buy", Value: 1})
 	} else {
-		self.Send(ctx, "S", common.Message{Label: "buy", Value: 1})
+		self.Send(ctx, "S", common.Message{Label: "buy", Value: 0})
+	}
+}
+
+func runABad(self *common.EndPoint, wg *sync.WaitGroup) {
+	defer wg.Done()
+	ctx := context.Background()
+	var span trace.Span
+	ctx, span = self.Tracer.Start(ctx, "TwoBuyer Endpoint A")
+	defer span.End()
+	// Send query to S
+	var query = rand.Intn(100)
+	fmt.Println("A: Sending query", query)
+	self.Send(ctx, "S", common.Message{Label: "query", Value: query})
+	// Receive a quote
+	var quote = self.Recv(ctx, "S").Value.(int)
+	var otherShare = self.Recv(ctx, "B").Value.(int)
+	if otherShare*2 >= quote {
+		// 1 stands for ok
+		self.Send(ctx, "S", common.Message{Label: "purchase", Value: 1})
+	} else {
+		self.Send(ctx, "S", common.Message{Label: "purchase", Value: 0})
 	}
 }
 
@@ -74,4 +95,15 @@ func MakeEndpoints() []*common.EndPoint {
 
 func RunAll() {
 	common.RunEndpoints(common.InitOtlpTracer, MakeEndpoints())
+}
+
+func RunAllBad() {
+	common.RunEndpoints(common.InitOtlpTracer, MakeBadEndpoints())
+}
+
+func MakeBadEndpoints() []*common.EndPoint {
+	a := common.MakeEndPoint("A", runABad)
+	b := common.MakeEndPoint("B", runB)
+	s := common.MakeEndPoint("S", runS)
+	return []*common.EndPoint{a, b, s}
 }
