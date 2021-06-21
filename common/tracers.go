@@ -26,7 +26,6 @@ func InitStdoutTracer() func() {
 	exp, err := stdout.NewExporter(stdout.WithPrettyPrint())
 	if err != nil {
 		log.Panicf("failed to initialize stdout exporter %v\n", err)
-		return func() {}
 	}
 	bsp := trace.NewBatchSpanProcessor(exp)
 	tp := trace.NewTracerProvider(
@@ -37,22 +36,25 @@ func InitStdoutTracer() func() {
 	return func() {}
 }
 
+const endpointUri = "http://localhost:14268/api/traces"
+
 // https://github.com/open-telemetry/opentelemetry-go/blob/master/example/jaeger/main.go
 func InitJaegerTracer() func() {
 	// Create and install Jaeger export pipeline.
-	flush, err := jaeger.InstallNewPipeline(
-		jaeger.WithCollectorEndpoint("http://localhost:14268/api/traces"),
-		jaeger.WithSDKOptions(
-			trace.WithSampler(trace.AlwaysSample()),
-			trace.WithResource(resource.NewWithAttributes(
-				semconv.ServiceNameKey.String("TwoBuyer"),
-			)),
-		),
-	)
+	exp, err := jaeger.NewRawExporter(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(endpointUri)))
 	if err != nil {
 		log.Fatal(err)
 	}
-	return flush
+	tp := trace.NewTracerProvider(
+		// Always be sure to batch in production.
+		trace.WithBatcher(exp),
+		// Record information about this application in an Resource.
+		trace.WithResource(resource.NewWithAttributes(
+			semconv.ServiceNameKey.String("TwoBuyer"),
+		)),
+	)
+	otel.SetTracerProvider(tp)
+	return func() {}
 }
 
 // https://github.com/open-telemetry/opentelemetry-go/blob/master/example/otel-collector/main.go
@@ -66,13 +68,12 @@ func InitOtlpTracer() func() {
 	// probably connect directly to the service through dns
 	driver := otlpgrpc.NewDriver(
 		otlpgrpc.WithInsecure(),
-		otlpgrpc.WithEndpoint("localhost:55680"),
+		otlpgrpc.WithEndpoint("localhost:30080"),
 		otlpgrpc.WithDialOption(grpc.WithBlock()), // useful for testing
 	)
 	exp, err := otlp.NewExporter(ctx, driver)
 	if err != nil {
-		log.Panicf("Failed to create exporter, %v\n", err)
-		return nil
+		log.Fatalf("failed to create exporter %e", err)
 	}
 
 	res, err := resource.New(ctx,
@@ -82,7 +83,7 @@ func InitOtlpTracer() func() {
 		),
 	)
 	if err != nil {
-		log.Panicf("Failed to create resource, %v\n", err)
+		log.Fatalf("failed to create resource %e", err)
 	}
 
 	bsp := trace.NewBatchSpanProcessor(exp)
@@ -105,10 +106,8 @@ func InitOtlpTracer() func() {
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 	otel.SetTracerProvider(tracerProvider)
 	global.SetMeterProvider(cont.MeterProvider())
-
-	err = cont.Start(context.Background())
-	if err != nil {
-		log.Panicf("Failed to start controller, %v\n", err)
+	if err := cont.Start(context.Background()); err != nil {
+		log.Panicf("failed to start controller %e", err)
 	}
 
 	return func() {
