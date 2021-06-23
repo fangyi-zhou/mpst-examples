@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"github.com/fangyi-zhou/mpst-tracing/labels"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -10,9 +11,9 @@ import (
 )
 
 var (
-	actionKey   = attribute.Key("mpst/action")
-	msgLabelKey = attribute.Key("mpst/msgLabel")
-	partnerKey  = attribute.Key("mpst/partner")
+	actionKey   = attribute.Key(labels.ActionKey)
+	msgLabelKey = attribute.Key(labels.MsgLabelKey)
+	partnerKey  = attribute.Key(labels.PartnerKey)
 	actionSend  = "Send"
 	actionRecv  = "Recv"
 )
