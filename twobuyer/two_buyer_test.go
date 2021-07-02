@@ -1,8 +1,9 @@
 package twobuyer
 
 import (
-	"github.com/fangyi-zhou/mpst-examples/common"
 	"testing"
+
+	"github.com/fangyi-zhou/mpst-examples/common"
 )
 
 func TestItRuns(t *testing.T) {

@@ -88,7 +88,11 @@ func (e *QueueEndPoint) Send(ctx context.Context, partner string, message Messag
 	var span trace.Span
 	_, span = e.tracer.Start(ctx, "Send")
 	defer span.End()
-	span.SetAttributes(msgLabelKey.String(message.Label), partnerKey.String(partner), actionKey.String(actionSend))
+	span.SetAttributes(
+		msgLabelKey.String(message.Label),
+		partnerKey.String(partner),
+		actionKey.String(actionSend),
+	)
 	if _, exists := e.partners[partner]; !exists {
 		log.Panicf("%s is trying to send a message to an unconnected endpoint %s", e.name, partner)
 	}
@@ -104,6 +108,10 @@ func (e *QueueEndPoint) Recv(ctx context.Context, partner string) (Message, erro
 		log.Panicf("%s is trying to send a message to an unconnected endpoint %s", e.name, partner)
 	}
 	message := <-e.buffer[partner]
-	span.SetAttributes(msgLabelKey.String(message.Label), partnerKey.String(partner), actionKey.String(actionRecv))
+	span.SetAttributes(
+		msgLabelKey.String(message.Label),
+		partnerKey.String(partner),
+		actionKey.String(actionRecv),
+	)
 	return message, nil
 }

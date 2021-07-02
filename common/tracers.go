@@ -2,6 +2,9 @@ package common
 
 import (
 	"context"
+	"log"
+	"time"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpgrpc"
@@ -16,8 +19,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/semconv"
 	"google.golang.org/grpc"
-	"log"
-	"time"
 )
 
 // https://github.com/open-telemetry/opentelemetry-go/blob/master/example/namedtracer/main.go
@@ -41,7 +42,9 @@ const endpointUri = "http://localhost:14268/api/traces"
 // https://github.com/open-telemetry/opentelemetry-go/blob/master/example/jaeger/main.go
 func InitJaegerTracer() func() {
 	// Create and install Jaeger export pipeline.
-	exp, err := jaeger.NewRawExporter(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(endpointUri)))
+	exp, err := jaeger.NewRawExporter(
+		jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(endpointUri)),
+	)
 	if err != nil {
 		log.Fatal(err)
 	}

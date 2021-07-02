@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/fangyi-zhou/mpst-examples/twobuyer"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/fangyi-zhou/mpst-examples/twobuyer"
 )
 
 func main() {
