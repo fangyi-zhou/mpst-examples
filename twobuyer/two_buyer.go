@@ -68,8 +68,8 @@ func runS(self common.EndPoint, wg *sync.WaitGroup) {
 	// Send a quote
 	var quote = query * 2
 	fmt.Println("S: Sending quote", quote)
-	self.Send(ctx, "A", common.Message{Label: "quote", Value: quote})
-	self.Send(ctx, "B", common.Message{Label: "quote", Value: quote})
+	self.Send(ctx, "A", common.Message{Label: "quoteA", Value: quote})
+	self.Send(ctx, "B", common.Message{Label: "quoteB", Value: quote})
 	var decisionMsg, _ = self.Recv(ctx, "A")
 	var decision = decisionMsg.Value.(int)
 	if decision == 1 {
