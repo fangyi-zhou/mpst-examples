@@ -12,11 +12,12 @@ import (
 )
 
 var (
-	actionKey   = attribute.Key(labels.ActionKey)
-	msgLabelKey = attribute.Key(labels.MsgLabelKey)
-	partnerKey  = attribute.Key(labels.PartnerKey)
-	actionSend  = "Send"
-	actionRecv  = "Recv"
+	actionKey      = attribute.Key(labels.ActionKey)
+	msgLabelKey    = attribute.Key(labels.MsgLabelKey)
+	partnerKey     = attribute.Key(labels.PartnerKey)
+	currentRoleKey = attribute.Key(labels.CurrentRoleKey)
+	actionSend     = "Send"
+	actionRecv     = "Recv"
 )
 
 type Message struct {
@@ -92,6 +93,7 @@ func (e *QueueEndPoint) Send(ctx context.Context, partner string, message Messag
 		msgLabelKey.String(message.Label),
 		partnerKey.String(partner),
 		actionKey.String(actionSend),
+		currentRoleKey.String(e.Name()),
 	)
 	if _, exists := e.partners[partner]; !exists {
 		log.Panicf("%s is trying to send a message to an unconnected endpoint %s", e.name, partner)
@@ -112,6 +114,7 @@ func (e *QueueEndPoint) Recv(ctx context.Context, partner string) (Message, erro
 		msgLabelKey.String(message.Label),
 		partnerKey.String(partner),
 		actionKey.String(actionRecv),
+		currentRoleKey.String(e.Name()),
 	)
 	return message, nil
 }
