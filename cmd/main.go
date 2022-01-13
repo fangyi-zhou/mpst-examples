@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/fangyi-zhou/mpst-examples/twobuttons"
 	"math/rand"
 	"os"
 	"strings"
@@ -27,5 +28,8 @@ func main() {
 	case "twobuyerbad":
 		fmt.Println("Bad Two Buyer Protocol:")
 		twobuyer.RunAllBad()
+	case "twobuttons":
+		fmt.Println("Two Buttons Protocol:")
+		twobuttons.RunAll()
 	}
 }
