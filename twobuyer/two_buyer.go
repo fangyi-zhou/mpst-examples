@@ -95,9 +95,9 @@ func runB(self common.EndPoint, wg *sync.WaitGroup) {
 }
 
 func MakeEndpoints() []common.EndPoint {
-	a := common.MakeQueueEndPoint("A", runA)
-	b := common.MakeQueueEndPoint("B", runB)
-	s := common.MakeQueueEndPoint("S", runS)
+	a := common.MakeP2PEndPoint("A", runA)
+	b := common.MakeP2PEndPoint("B", runB)
+	s := common.MakeP2PEndPoint("S", runS)
 	return []common.EndPoint{a, b, s}
 }
 
@@ -110,8 +110,8 @@ func RunAllBad() {
 }
 
 func MakeBadEndpoints() []common.EndPoint {
-	a := common.MakeQueueEndPoint("A", runABad)
-	b := common.MakeQueueEndPoint("B", runB)
-	s := common.MakeQueueEndPoint("S", runS)
+	a := common.MakeP2PEndPoint("A", runABad)
+	b := common.MakeP2PEndPoint("B", runB)
+	s := common.MakeP2PEndPoint("S", runS)
 	return []common.EndPoint{a, b, s}
 }

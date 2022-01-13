@@ -34,37 +34,37 @@ type EndPoint interface {
 	Run(group *sync.WaitGroup)
 }
 
-type QueueEndPoint struct {
+type P2PEndPoint struct {
 	name     string
 	run      func(self EndPoint, group *sync.WaitGroup)
-	partners map[string]*QueueEndPoint
+	partners map[string]*P2PEndPoint
 	buffer   map[string]chan Message
 	tracer   trace.Tracer
 }
 
-func MakeQueueEndPoint(name string, runFunc func(self EndPoint, group *sync.WaitGroup)) EndPoint {
-	return &QueueEndPoint{
+func MakeP2PEndPoint(name string, runFunc func(self EndPoint, group *sync.WaitGroup)) EndPoint {
+	return &P2PEndPoint{
 		name:     name,
 		run:      runFunc,
-		partners: make(map[string]*QueueEndPoint),
+		partners: make(map[string]*P2PEndPoint),
 		buffer:   make(map[string]chan Message),
 		tracer:   otel.Tracer(name),
 	}
 }
 
-func (e *QueueEndPoint) Run(group *sync.WaitGroup) {
+func (e *P2PEndPoint) Run(group *sync.WaitGroup) {
 	e.run(e, group)
 }
 
-func (e *QueueEndPoint) Name() string {
+func (e *P2PEndPoint) Name() string {
 	return e.name
 }
 
-func (e *QueueEndPoint) Tracer() trace.Tracer {
+func (e *P2PEndPoint) Tracer() trace.Tracer {
 	return e.tracer
 }
 
-func connectQueueEndpoints(ep1 *QueueEndPoint, ep2 *QueueEndPoint) {
+func connectP2PEndpoints(ep1 *P2PEndPoint, ep2 *P2PEndPoint) {
 	if ep1.name == ep2.name {
 		log.Panicf("Cannot connect two endpoints with same name %s", ep1.name)
 	}
@@ -80,12 +80,12 @@ func connectQueueEndpoints(ep1 *QueueEndPoint, ep2 *QueueEndPoint) {
 	ep2.buffer[ep1.name] = make(chan Message, 1)
 }
 
-func (e *QueueEndPoint) Connect(other EndPoint) error {
-	connectQueueEndpoints(e, other.(*QueueEndPoint))
+func (e *P2PEndPoint) Connect(other EndPoint) error {
+	connectP2PEndpoints(e, other.(*P2PEndPoint))
 	return nil
 }
 
-func (e *QueueEndPoint) Send(ctx context.Context, partner string, message Message) error {
+func (e *P2PEndPoint) Send(ctx context.Context, partner string, message Message) error {
 	var span trace.Span
 	_, span = e.tracer.Start(ctx, "Send")
 	defer span.End()
@@ -102,7 +102,7 @@ func (e *QueueEndPoint) Send(ctx context.Context, partner string, message Messag
 	return nil
 }
 
-func (e *QueueEndPoint) Recv(ctx context.Context, partner string) (Message, error) {
+func (e *P2PEndPoint) Recv(ctx context.Context, partner string) (Message, error) {
 	var span trace.Span
 	_, span = e.tracer.Start(ctx, "Recv")
 	defer span.End()
