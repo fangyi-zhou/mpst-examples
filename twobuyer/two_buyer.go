@@ -21,9 +21,9 @@ func runA(self common.EndPoint, wg *sync.WaitGroup) {
 	fmt.Println("A: Sending query", query)
 	self.Send(ctx, "S", common.Message{Label: "query", Value: query})
 	// Receive a quote
-	var quoteMsg, _ = self.Recv(ctx, "S")
+	var quoteMsg, _ = self.RecvSync(ctx, "S")
 	var quote = quoteMsg.Value.(int)
-	var otherShareMsg, _ = self.Recv(ctx, "B")
+	var otherShareMsg, _ = self.RecvSync(ctx, "B")
 	var otherShare = otherShareMsg.Value.(int)
 	if otherShare*2 >= quote {
 		// 1 stands for ok
@@ -44,9 +44,9 @@ func runABad(self common.EndPoint, wg *sync.WaitGroup) {
 	fmt.Println("A: Sending query", query)
 	self.Send(ctx, "S", common.Message{Label: "query", Value: query})
 	// Receive a quote
-	var quoteMsg, _ = self.Recv(ctx, "S")
+	var quoteMsg, _ = self.RecvSync(ctx, "S")
 	var quote = quoteMsg.Value.(int)
-	var otherShareMsg, _ = self.Recv(ctx, "B")
+	var otherShareMsg, _ = self.RecvSync(ctx, "B")
 	var otherShare = otherShareMsg.Value.(int)
 	if otherShare*2 >= quote {
 		// 1 stands for ok
@@ -63,14 +63,14 @@ func runS(self common.EndPoint, wg *sync.WaitGroup) {
 	ctx, span = self.Tracer().Start(ctx, "TwoBuyer Endpoint S")
 	defer span.End()
 	// Receive a query
-	var queryMsg, _ = self.Recv(ctx, "A")
+	var queryMsg, _ = self.RecvSync(ctx, "A")
 	var query = queryMsg.Value.(int)
 	// Send a quote
 	var quote = query * 2
 	fmt.Println("S: Sending quote", quote)
 	self.Send(ctx, "A", common.Message{Label: "quoteA", Value: quote})
 	self.Send(ctx, "B", common.Message{Label: "quoteB", Value: quote})
-	var decisionMsg, _ = self.Recv(ctx, "A")
+	var decisionMsg, _ = self.RecvSync(ctx, "A")
 	var decision = decisionMsg.Value.(int)
 	if decision == 1 {
 		fmt.Println("Succeed!")
@@ -86,7 +86,7 @@ func runB(self common.EndPoint, wg *sync.WaitGroup) {
 	ctx, span = self.Tracer().Start(ctx, "TwoBuyer Endpoint B")
 	defer span.End()
 	// Receive a quote
-	var quoteMsg, _ = self.Recv(ctx, "S")
+	var quoteMsg, _ = self.RecvSync(ctx, "S")
 	var quote = quoteMsg.Value.(int)
 	// Propose a share
 	var share = quote/2 + rand.Intn(10) - 5
