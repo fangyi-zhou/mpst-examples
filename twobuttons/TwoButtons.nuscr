@@ -1,0 +1,19 @@
+(*# MixedStateChoice #*)
+
+(* A machine with two emergency stop buttons, any button press
+triggers the stop, and after stopping the machine notifies the buttons
+so they can turn on an alert light.
+*)
+
+
+global protocol TwoBigRedButtons (role M, role A, role B) {
+  choice at M {
+    STOP_from_A from A to M ; (*) request the machine to stop
+    STOPPED_A from M to A ; (*) the machine notifies both buttons it stoped, so they can turn on an alert light.
+    STOPPED_A from M to B ;
+  } or {
+    STOP_from_B from B to M ;
+    STOPPED_B from M to A ;
+    STOPPED_B from M to B ;
+  }
+}
