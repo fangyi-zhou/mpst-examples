@@ -2,9 +2,9 @@ package common
 
 import (
 	"context"
+	"fmt"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
-	"log"
 	"sync"
 )
 
@@ -38,25 +38,29 @@ func (e *P2PEndPoint) Tracer() trace.Tracer {
 	return e.tracer
 }
 
-func connectP2PEndpoints(ep1 *P2PEndPoint, ep2 *P2PEndPoint) {
+func connectP2PEndpoints(ep1 *P2PEndPoint, ep2 *P2PEndPoint) error {
 	if ep1.name == ep2.name {
-		log.Panicf("Cannot connect two endpoints with same name %s", ep1.name)
+		return fmt.Errorf("cannot connect two endpoints with same name %s", ep1.name)
 	}
 	if _, exists := ep1.partners[ep2.name]; exists {
-		log.Panicf("Cannot connect two connected endpoints, %s and %s", ep1.name, ep2.name)
+		return fmt.Errorf("cannot connect two connected endpoints, %s and %s", ep1.name, ep2.name)
 	}
 	if _, exists := ep2.partners[ep1.name]; exists {
-		log.Panicf("Cannot connect two connected endpoints, %s and %s", ep1.name, ep2.name)
+		return fmt.Errorf("cannot connect two connected endpoints, %s and %s", ep1.name, ep2.name)
 	}
 	ep1.partners[ep2.name] = ep2
 	ep1.buffer[ep2.name] = make(chan Message, 1)
 	ep2.partners[ep1.name] = ep1
 	ep2.buffer[ep1.name] = make(chan Message, 1)
+	return nil
 }
 
 func (e *P2PEndPoint) Connect(other EndPoint) error {
-	connectP2PEndpoints(e, other.(*P2PEndPoint))
-	return nil
+	other_, ok := other.(*P2PEndPoint)
+	if ok {
+		return connectP2PEndpoints(e, other_)
+	}
+	return fmt.Errorf("cannot connect P2P endpoint to non-P2P endpoint")
 }
 
 func (e *P2PEndPoint) Send(ctx context.Context, partner string, message Message) error {
@@ -70,7 +74,7 @@ func (e *P2PEndPoint) Send(ctx context.Context, partner string, message Message)
 		currentRoleKey.String(e.Name()),
 	)
 	if _, exists := e.partners[partner]; !exists {
-		log.Panicf("%s is trying to send a message to an unconnected endpoint %s", e.name, partner)
+		return fmt.Errorf("%s is trying to send a message to an unconnected endpoint %s", e.name, partner)
 	}
 	e.partners[partner].buffer[e.name] <- message
 	return nil
@@ -81,7 +85,7 @@ func (e *P2PEndPoint) RecvSync(ctx context.Context, partner string) (Message, er
 	_, span = e.tracer.Start(ctx, "Recv")
 	defer span.End()
 	if _, exists := e.partners[partner]; !exists {
-		log.Panicf("%s is trying to send a message to an unconnected endpoint %s", e.name, partner)
+		return Message{}, fmt.Errorf("%s is trying to send a message to an unconnected endpoint %s", e.name, partner)
 	}
 	message := <-e.buffer[partner]
 	span.SetAttributes(
@@ -97,7 +101,7 @@ func (e *P2PEndPoint) RecvAsync(ctx context.Context, partner string) (*Message, 
 	_, span = e.tracer.Start(ctx, "Recv (async)")
 	defer span.End()
 	if _, exists := e.partners[partner]; !exists {
-		log.Panicf("%s is trying to send a message to an unconnected endpoint %s", e.name, partner)
+		return nil, fmt.Errorf("%s is trying to send a message to an unconnected endpoint %s", e.name, partner)
 	}
 	select {
 	case message := <-e.buffer[partner]:
