@@ -68,7 +68,7 @@ func (m *MailBoxEndPoint) RecvSync(ctx context.Context, partner string) (Message
 			m.received = m.received[1:]
 			span.SetAttributes(
 				msgLabelKey.String(msg.Label),
-				partnerKey.String(partner),
+				partnerKey.String(msg.origin),
 				actionKey.String(actionRecv),
 				currentRoleKey.String(m.Name()),
 			)
@@ -77,7 +77,7 @@ func (m *MailBoxEndPoint) RecvSync(ctx context.Context, partner string) (Message
 		msg := <-m.buffer
 		span.SetAttributes(
 			msgLabelKey.String(msg.Label),
-			partnerKey.String(partner),
+			partnerKey.String(msg.origin),
 			actionKey.String(actionRecv),
 			currentRoleKey.String(m.Name()),
 		)
@@ -92,7 +92,7 @@ func (m *MailBoxEndPoint) RecvSync(ctx context.Context, partner string) (Message
 				m.received = append(m.received[0:idx], m.received[idx+1:]...)
 				span.SetAttributes(
 					msgLabelKey.String(msg.Label),
-					partnerKey.String(partner),
+					partnerKey.String(msg.origin),
 					actionKey.String(actionRecv),
 					currentRoleKey.String(m.Name()),
 				)
@@ -104,7 +104,7 @@ func (m *MailBoxEndPoint) RecvSync(ctx context.Context, partner string) (Message
 			if newMsg.origin == partner {
 				span.SetAttributes(
 					msgLabelKey.String(newMsg.Label),
-					partnerKey.String(partner),
+					partnerKey.String(newMsg.origin),
 					actionKey.String(actionRecv),
 					currentRoleKey.String(m.Name()),
 				)
