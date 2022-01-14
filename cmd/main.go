@@ -31,5 +31,8 @@ func main() {
 	case "twobuttons":
 		fmt.Println("Two Buttons Protocol:")
 		twobuttons.RunAll()
+	case "twobuttonsmailbox":
+		fmt.Println("Two Buttons Protocol:")
+		twobuttons.RunAllMailbox()
 	}
 }

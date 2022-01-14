@@ -111,3 +111,8 @@ func RunAll() {
 	rand.Seed(time.Now().UnixMilli())
 	common.RunEndpoints(common.InitOtlpTracer, MakeEndpoints())
 }
+
+func RunAllMailbox() {
+	rand.Seed(time.Now().UnixMilli())
+	common.RunEndpoints(common.InitOtlpTracer, MakeMailboxEndpoints())
+}
