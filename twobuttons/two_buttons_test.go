@@ -9,3 +9,7 @@ import (
 func TestItRuns(t *testing.T) {
 	common.RunEndpoints(common.InitStdoutTracer, MakeEndpoints())
 }
+
+func TestItRunsMailbox(t *testing.T) {
+	common.RunEndpoints(common.InitStdoutTracer, MakeMailboxEndpoints())
+}
