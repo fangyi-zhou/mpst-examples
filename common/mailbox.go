@@ -127,7 +127,7 @@ func (m *MailBoxEndPoint) RecvAsync(ctx context.Context, partner string) (*Messa
 			m.received = m.received[1:]
 			span.SetAttributes(
 				msgLabelKey.String(msg.Label),
-				partnerKey.String(partner),
+				partnerKey.String(msg.origin),
 				actionKey.String(actionRecv),
 				currentRoleKey.String(m.Name()),
 			)
@@ -137,7 +137,7 @@ func (m *MailBoxEndPoint) RecvAsync(ctx context.Context, partner string) (*Messa
 		case msg := <-m.buffer:
 			span.SetAttributes(
 				msgLabelKey.String(msg.Label),
-				partnerKey.String(partner),
+				partnerKey.String(msg.origin),
 				actionKey.String(actionRecv),
 				currentRoleKey.String(m.Name()),
 			)
@@ -154,7 +154,7 @@ func (m *MailBoxEndPoint) RecvAsync(ctx context.Context, partner string) (*Messa
 			if msg.origin == partner {
 				span.SetAttributes(
 					msgLabelKey.String(msg.Label),
-					partnerKey.String(partner),
+					partnerKey.String(msg.origin),
 					actionKey.String(actionRecv),
 					currentRoleKey.String(m.Name()),
 				)
@@ -168,7 +168,7 @@ func (m *MailBoxEndPoint) RecvAsync(ctx context.Context, partner string) (*Messa
 				if newMsg.origin == partner {
 					span.SetAttributes(
 						msgLabelKey.String(newMsg.Label),
-						partnerKey.String(partner),
+						partnerKey.String(newMsg.origin),
 						actionKey.String(actionRecv),
 						currentRoleKey.String(m.Name()),
 					)
