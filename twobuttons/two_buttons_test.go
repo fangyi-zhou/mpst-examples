@@ -7,9 +7,9 @@ import (
 )
 
 func TestItRuns(t *testing.T) {
-	common.RunEndpoints(common.InitStdoutTracer, MakeEndpoints())
+	common.RunEndpoints(common.InitStdoutTracer, "TwoButtons", MakeEndpoints())
 }
 
 func TestItRunsMailbox(t *testing.T) {
-	common.RunEndpoints(common.InitStdoutTracer, MakeMailboxEndpoints())
+	common.RunEndpoints(common.InitStdoutTracer, "TwoButtons", MakeMailboxEndpoints())
 }

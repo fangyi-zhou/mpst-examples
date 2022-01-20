@@ -102,11 +102,11 @@ func MakeEndpoints() []common.EndPoint {
 }
 
 func RunAll() {
-	common.RunEndpoints(common.InitOtlpTracer, MakeEndpoints())
+	common.RunEndpoints(common.InitOtlpTracer, "TwoBuyer", MakeEndpoints())
 }
 
 func RunAllBad() {
-	common.RunEndpoints(common.InitOtlpTracer, MakeBadEndpoints())
+	common.RunEndpoints(common.InitOtlpTracer, "TwoBuyer", MakeBadEndpoints())
 }
 
 func MakeBadEndpoints() []common.EndPoint {

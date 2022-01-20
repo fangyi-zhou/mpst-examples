@@ -17,7 +17,7 @@ import (
 )
 
 // https://github.com/open-telemetry/opentelemetry-go/blob/master/example/namedtracer/main.go
-func InitStdoutTracer() func() {
+func InitStdoutTracer(_ string) func() {
 	var err error
 	exp, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
 	if err != nil {
@@ -35,7 +35,7 @@ func InitStdoutTracer() func() {
 const endpointUri = "http://localhost:14268/api/traces"
 
 // https://github.com/open-telemetry/opentelemetry-go/blob/master/example/jaeger/main.go
-func InitJaegerTracer() func() {
+func InitJaegerTracer(serviceName string) func() {
 	// Create and install Jaeger export pipeline.
 	exp, err := jaeger.New(
 		jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(endpointUri)),
@@ -49,7 +49,7 @@ func InitJaegerTracer() func() {
 		// Record information about this application in an Resource.
 		trace.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("TwoBuyer"),
+			semconv.ServiceNameKey.String(serviceName),
 		)),
 	)
 	otel.SetTracerProvider(tp)
@@ -57,7 +57,7 @@ func InitJaegerTracer() func() {
 }
 
 // https://github.com/open-telemetry/opentelemetry-go/blob/master/example/otel-collector/main.go
-func InitOtlpTracer() func() {
+func InitOtlpTracer(serviceName string) func() {
 	ctx := context.Background()
 
 	// If the OpenTelemetry Collector is running on a local cluster (minikube or
@@ -78,7 +78,7 @@ func InitOtlpTracer() func() {
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
 			// the service name used to display traces in backends
-			semconv.ServiceNameKey.String("TwoBuyer"),
+			semconv.ServiceNameKey.String(serviceName),
 		),
 	)
 	if err != nil {

@@ -7,5 +7,5 @@ import (
 )
 
 func TestItRuns(t *testing.T) {
-	common.RunEndpoints(common.InitStdoutTracer, MakeEndpoints())
+	common.RunEndpoints(common.InitStdoutTracer, "TwoBuyer", MakeEndpoints())
 }

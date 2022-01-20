@@ -109,10 +109,10 @@ func MakeMailboxEndpoints() []common.EndPoint {
 
 func RunAll() {
 	rand.Seed(time.Now().UnixMilli())
-	common.RunEndpoints(common.InitOtlpTracer, MakeEndpoints())
+	common.RunEndpoints(common.InitOtlpTracer, "TwoButtons", MakeEndpoints())
 }
 
 func RunAllMailbox() {
 	rand.Seed(time.Now().UnixMilli())
-	common.RunEndpoints(common.InitOtlpTracer, MakeMailboxEndpoints())
+	common.RunEndpoints(common.InitOtlpTracer, "TwoButtons", MakeMailboxEndpoints())
 }
