@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/fangyi-zhou/mpst-examples/twobuttons"
+	"log"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -34,5 +36,12 @@ func main() {
 	case "twobuttonsmailbox":
 		fmt.Println("Two Buttons Protocol:")
 		twobuttons.RunAllMailbox()
+	case "twobuttonsmailboxmulti":
+		fmt.Println("Two Buttons Protocol:")
+		iterations, err := strconv.Atoi(os.Args[2])
+		if err != nil {
+			log.Panic(err)
+		}
+		twobuttons.RunAllMailboxMulti(iterations)
 	}
 }
