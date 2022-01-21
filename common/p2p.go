@@ -30,6 +30,12 @@ func (e *P2PEndPoint) Run(group *sync.WaitGroup) {
 	e.run(e, group)
 }
 
+func (e *P2PEndPoint) Clear() {
+	for partner, _ := range e.buffer {
+		e.buffer[partner] = make(chan Message, 1)
+	}
+}
+
 func (e *P2PEndPoint) Name() string {
 	return e.name
 }

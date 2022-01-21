@@ -32,6 +32,11 @@ func MakeMailBoxEndPoint(name string, runFunc func(self EndPoint, group *sync.Wa
 	}
 }
 
+func (m *MailBoxEndPoint) Clear() {
+	m.buffer = make(chan taggedMessage, 1)
+	m.received = nil
+}
+
 func (m *MailBoxEndPoint) Name() string {
 	return m.name
 }

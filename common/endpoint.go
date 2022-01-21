@@ -32,4 +32,5 @@ type EndPoint interface {
 	RecvAsync(ctx context.Context, partner string) (*Message, error)
 	Connect(other EndPoint) error
 	Run(group *sync.WaitGroup)
+	Clear()
 }
