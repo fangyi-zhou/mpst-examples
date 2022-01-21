@@ -3,9 +3,10 @@ package common
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
-	"sync"
 )
 
 type P2PEndPoint struct {
@@ -80,7 +81,11 @@ func (e *P2PEndPoint) Send(ctx context.Context, partner string, message Message)
 		currentRoleKey.String(e.Name()),
 	)
 	if _, exists := e.partners[partner]; !exists {
-		return fmt.Errorf("%s is trying to send a message to an unconnected endpoint %s", e.name, partner)
+		return fmt.Errorf(
+			"%s is trying to send a message to an unconnected endpoint %s",
+			e.name,
+			partner,
+		)
 	}
 	e.partners[partner].buffer[e.name] <- message
 	return nil
@@ -91,7 +96,11 @@ func (e *P2PEndPoint) RecvSync(ctx context.Context, partner string) (Message, er
 	_, span = e.tracer.Start(ctx, "Recv")
 	defer span.End()
 	if _, exists := e.partners[partner]; !exists {
-		return Message{}, fmt.Errorf("%s is trying to send a message to an unconnected endpoint %s", e.name, partner)
+		return Message{}, fmt.Errorf(
+			"%s is trying to send a message to an unconnected endpoint %s",
+			e.name,
+			partner,
+		)
 	}
 	message := <-e.buffer[partner]
 	span.SetAttributes(
@@ -107,7 +116,11 @@ func (e *P2PEndPoint) RecvAsync(ctx context.Context, partner string) (*Message, 
 	_, span = e.tracer.Start(ctx, "Recv (async)")
 	defer span.End()
 	if _, exists := e.partners[partner]; !exists {
-		return nil, fmt.Errorf("%s is trying to send a message to an unconnected endpoint %s", e.name, partner)
+		return nil, fmt.Errorf(
+			"%s is trying to send a message to an unconnected endpoint %s",
+			e.name,
+			partner,
+		)
 	}
 	select {
 	case message := <-e.buffer[partner]:

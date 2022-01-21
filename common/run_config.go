@@ -23,7 +23,12 @@ func RunEndpoints(tracerInitFunc TracerInitFunc, serviceName string, endpoints [
 	wg.Wait()
 }
 
-func RunEndpointsMulti(tracerInitFunc TracerInitFunc, serviceName string, endpoints []EndPoint, iterations int) {
+func RunEndpointsMulti(
+	tracerInitFunc TracerInitFunc,
+	serviceName string,
+	endpoints []EndPoint,
+	iterations int,
+) {
 	for i := 0; i < len(endpoints); i++ {
 		for j := i + 1; j < len(endpoints); j++ {
 			endpoints[i].Connect(endpoints[j])

@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/fangyi-zhou/mpst-examples/twobuttons"
 	"log"
 	"math/rand"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/fangyi-zhou/mpst-examples/twobuttons"
 
 	"github.com/fangyi-zhou/mpst-examples/twobuyer"
 )

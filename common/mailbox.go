@@ -3,9 +3,10 @@ package common
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
-	"sync"
 )
 
 type taggedMessage struct {
@@ -56,7 +57,11 @@ func (m *MailBoxEndPoint) Send(ctx context.Context, partner string, message Mess
 		currentRoleKey.String(m.Name()),
 	)
 	if _, exists := m.partners[partner]; !exists {
-		return fmt.Errorf("%s is trying to send a message to an unconnected endpoint %s", m.name, partner)
+		return fmt.Errorf(
+			"%s is trying to send a message to an unconnected endpoint %s",
+			m.name,
+			partner,
+		)
 	}
 	m.partners[partner].buffer <- taggedMessage{message, m.name}
 	return nil

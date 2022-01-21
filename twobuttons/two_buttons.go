@@ -119,5 +119,10 @@ func RunAllMailbox() {
 
 func RunAllMailboxMulti(iterations int) {
 	rand.Seed(time.Now().UnixMilli())
-	common.RunEndpointsMulti(common.InitOtlpTracer, "TwoButtons", MakeMailboxEndpoints(), iterations)
+	common.RunEndpointsMulti(
+		common.InitOtlpTracer,
+		"TwoButtons",
+		MakeMailboxEndpoints(),
+		iterations,
+	)
 }
